@@ -1,0 +1,4 @@
+ultralytics
+yt-dlp
+opencv-python
+PyYAML

@@ -1,0 +1,19 @@
+# Cấu hình chung cho mô hình YOLO
+model:
+  path: "yolo11n.pt"      # Có thể đổi thành yolo11m.pt, yolo11s.pt, v.v.
+  conf_threshold: 0.25    # Ngưỡng tin cậy
+  img_size: 320           # Giảm từ 640 → 320 để tăng FPS (~2x nhanh hơn)
+  skip_frame: 2           # Chỉ chạy AI 1 lần sau mỗi N frame (1 = không skip)
+  # Các lớp đối tượng muốn detect (0: person, 2: car, 3: motorcycle, 5: bus, 7: truck)
+  classes: [1, 2, 3, 5, 7]
+
+# Cấu hình luồng video
+video:
+  resolution: 480         # Giảm từ 720 → 480 để giảm tải decode video
+  reconnect_delay: 5      # Thời gian chờ (giây) khi mất kết nối
+
+# Danh sách các camera (YouTube URL hoặc RTSP/File)
+cameras:
+  cam_traffic_1: "https://www.youtube.com/watch?v=1EamsYw_Xyo"
+  cam_traffic_2: "https://www.youtube.com/watch?v=5_XvR7O_4S8"
+  # Bạn có thể thêm nhiều cam nữa ở đây
