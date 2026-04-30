@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ITMS Frontend</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #1a1a1a; color: white; }
+        .container { text-align: center; border: 1px solid #333; padding: 2rem; border-radius: 8px; background-color: #242424; }
+        h1 { color: #646cff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ITMS - Intelligent Traffic Management System</h1>
+        <p>Frontend is running via Nginx.</p>
+        <p>Backend API: <span id="api-status">Checking...</span></p>
+    </div>
+    <script>
+        fetch('http://localhost:18000/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('api-status').innerText = data.message;
+                document.getElementById('api-status').style.color = '#4caf50';
+            })
+            .catch(err => {
+                document.getElementById('api-status').innerText = 'Backend Unreachable (Check CORS or Port)';
+                document.getElementById('api-status').style.color = '#f44336';
+            });
+    </script>
+</body>
+</html>
