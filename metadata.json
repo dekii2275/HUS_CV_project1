@@ -1,0 +1,6 @@
+{
+  "name": "Remix: TrafficOps Command",
+  "description": "An institutional-grade traffic management and monitoring dashboard, providing real-time AI-powered insights, violation tracking, and vehicle search capabilities.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": []
+}
