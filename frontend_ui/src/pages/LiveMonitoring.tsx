@@ -29,6 +29,29 @@ const CAMERA_NODES = [
 export default function LiveMonitoring() {
   const { t } = useLanguage();
   const [isZoomed, setIsZoomed] = React.useState(false);
+  const [cameras, setCameras] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    // Determine API Base URL dynamically
+    // Use window.location.hostname for local dev to avoid localhost/127.0.0.1 mismatch
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:18000`;
+    
+    fetch(`${apiBaseUrl}/api/v1/cameras`)
+      .then(res => {
+         if (!res.ok) throw new Error("Network response was not ok");
+         return res.json();
+      })
+      .then(data => {
+        setCameras(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch cameras:", err);
+        setCameras(CAMERA_NODES); // Fallback to mock if API fails
+        setLoading(false);
+      });
+  }, []);
 
   const CameraView = ({ zoomed = false, onToggleZoom }: { zoomed?: boolean, onToggleZoom: () => void }) => (
     <div className={cn(
@@ -176,30 +199,36 @@ export default function LiveMonitoring() {
 
         {/* Sidebar Controls */}
         <div className="lg:col-span-1 space-y-6">
-           <Card title={t('monitor.telemetry')} subtitle={t('monitor.signal_strength')}>
+            <Card title={t('monitor.telemetry')} subtitle={t('monitor.signal_strength')}>
               <div className="p-6 space-y-6 bg-surface">
                  <div className="space-y-4">
-                    {CAMERA_NODES.map(cam => (
-                      <div key={cam.id} className="flex items-center gap-4 group cursor-pointer hover:bg-background-muted p-2 -mx-2 transition-all">
-                         <div className={cn(
-                           "p-2 border transition-all",
-                           cam.status === 'ACTIVE' ? "border-brand-primary/20 text-brand-primary bg-brand-primary/5" : "border-border-subtle text-text-muted opacity-30"
-                         )}>
-                           <Wifi size={14} />
-                         </div>
-                         <div className="flex-1">
-                            <div className="flex justify-between items-start">
-                               <span className="text-[9px] font-bold text-text-primary uppercase tracking-widest">{cam.id}</span>
-                               <span className={cn("text-[7px] font-mono font-bold", cam.status === 'ACTIVE' ? "text-brand-success" : "text-brand-error")}>{cam.status}</span>
-                            </div>
-                            <div className="text-[8px] text-text-muted uppercase font-mono tracking-tighter italic">{cam.location}</div>
-                         </div>
-                         <div className="text-right flex flex-col items-end">
-                            <span className="text-[8px] font-mono text-text-primary">{cam.bit}</span>
-                            <span className="text-[6px] font-mono text-text-muted">{cam.latency}</span>
-                         </div>
-                      </div>
-                    ))}
+                    {loading ? (
+                       <div className="text-center text-brand-primary text-xs font-mono animate-pulse uppercase">
+                          FETCHING NODE TELEMETRY...
+                       </div>
+                    ) : (
+                      cameras.map(cam => (
+                        <div key={cam.id} className="flex items-center gap-4 group cursor-pointer hover:bg-background-muted p-2 -mx-2 transition-all">
+                           <div className={cn(
+                             "p-2 border transition-all",
+                             cam.status === 'ACTIVE' ? "border-brand-primary/20 text-brand-primary bg-brand-primary/5" : "border-border-subtle text-text-muted opacity-30"
+                           )}>
+                             <Wifi size={14} />
+                           </div>
+                           <div className="flex-1">
+                              <div className="flex justify-between items-start">
+                                 <span className="text-[9px] font-bold text-text-primary uppercase tracking-widest">{cam.name || cam.id}</span>
+                                 <span className={cn("text-[7px] font-mono font-bold", cam.status === 'ACTIVE' ? "text-brand-success" : "text-brand-error")}>{cam.status}</span>
+                              </div>
+                              <div className="text-[8px] text-text-muted uppercase font-mono tracking-tighter italic">{cam.location}</div>
+                           </div>
+                           <div className="text-right flex flex-col items-end">
+                              <span className="text-[8px] font-mono text-text-primary">{cam.bitrate || cam.bit}</span>
+                              <span className="text-[6px] font-mono text-text-muted">{cam.latency}</span>
+                           </div>
+                        </div>
+                      ))
+                    )}
                  </div>
 
                  <button className="w-full py-3 bg-background-muted border border-border-subtle hover:border-brand-primary/40 text-[9px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all group">
