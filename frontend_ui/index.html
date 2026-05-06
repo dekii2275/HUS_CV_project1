@@ -1,30 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>ITMS Frontend</title>
-    <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #1a1a1a; color: white; }
-        .container { text-align: center; border: 1px solid #333; padding: 2rem; border-radius: 8px; background-color: #242424; }
-        h1 { color: #646cff; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>ITMS - Intelligent Traffic Management System</h1>
-        <p>Frontend is running via Nginx.</p>
-        <p>Backend API: <span id="api-status">Checking...</span></p>
-    </div>
-    <script>
-        fetch('http://localhost:18000/')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('api-status').innerText = data.message;
-                document.getElementById('api-status').style.color = '#4caf50';
-            })
-            .catch(err => {
-                document.getElementById('api-status').innerText = 'Backend Unreachable (Check CORS or Port)';
-                document.getElementById('api-status').style.color = '#f44336';
-            });
-    </script>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Google AI Studio App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
+
