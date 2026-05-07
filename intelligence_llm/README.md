@@ -44,57 +44,57 @@ PostgreSQL/TimescaleDB
 
 Dự án được tổ chức theo module để đảm bảo tính mở rộng và dễ bảo trì:
 ```text
-intelligence_llm/
-│
-├── README.md
-├── .env.example
-├── docker-compose.yml
-├── requirements.txt
-│
-├── data/
-│   ├── schema.sql                  # DDL cho PostgreSQL/TimescaleDB
-│   └── seed_sample.py              # Script tạo dữ liệu giả để test
-│
-├── src/
-│   ├── __init__.py
-│   │
-│   ├── db/
-│   │   ├── connection.py           # Pool kết nối DB (asyncpg)
-│   │   ├── queries.py              # Các SQL query template
-│   │   └── models.py               # Pydantic schema cho traffic data
-│   │
-│   ├── ingestion/
-│   │   ├── loader.py               # Load data từ DB → Document objects
-│   │   ├── embedder.py             # Tạo embedding (sentence-transformers)
-│   │   └── vector_store.py         # Upsert vào ChromaDB / pgvector
-│   │
-│   ├── rag/
-│   │   ├── retriever.py            # Hybrid retriever (semantic + SQL)
-│   │   ├── sql_agent.py            # LangChain SQL Agent (tự viết query)
-│   │   ├── chain.py                # RAG chain chính (LangChain LCEL)
-│   │   └── prompts.py              # System prompt, few-shot examples
-│   │
-│   ├── reporting/
-│   │   ├── scheduler.py            # APScheduler: báo cáo cuối ngày
-│   │   ├── report_generator.py     # LLM viết báo cáo từ daily summary
-│   │   └── templates/
-│   │       └── daily_report.txt    # Prompt template báo cáo
-│   │
-│   └── api/
-│       ├── main.py                 # FastAPI app
-│       ├── routers/
-│       │   ├── chat.py             # POST /chat — nhận câu hỏi, trả lời
-│       │   └── reports.py          # GET /reports/daily
-│       └── schemas.py              # Request/Response Pydantic models
-│
-├── tests/
-│   ├── test_sql_agent.py
-│   ├── test_rag_chain.py
-│   └── test_api.py
-│
-└── notebooks/
-    ├── 01_explore_data.ipynb
-    ├── 02_embedding_eval.ipynb
-    └── 03_prompt_engineering.ipynb
+📁 intelligence_llm/                # Module 4 — LLM & RAG (PHẦN BẠN LÀM)
+   ├── README.md
+   ├── requirements.txt
+   ├── Dockerfile
+   │
+   ├── app/
+   │   ├── __init__.py
+   │   ├── main.py                     # FastAPI entry point cho LLM service
+   │   │
+   │   ├── routers/
+   │   │   ├── chat.py                 # POST /chat — nhận câu hỏi, trả lời NL
+   │   │   └── reports.py              # GET /reports/daily?date=...
+   │   │
+   │   └── schemas.py                  # ChatRequest, ChatResponse, ReportResponse
+   │
+   ├── db/
+   │   ├── __init__.py
+   │   ├── connection.py               # asyncpg kết nối TimescaleDB
+   │   ├── models.py                   # Pydantic schema: TrafficEvent, VehicleCount
+   │   └── queries.py                  # SQL query templates (time-range, aggregate)
+   │
+   ├── ingestion/
+   │   ├── __init__.py
+   │   ├── loader.py                   # DB rows → LangChain Documents
+   │   ├── embedder.py                 # multilingual-e5-base embedding
+   │   └── vector_store.py             # ChromaDB upsert + incremental update
+   │
+   ├── rag/
+   │   ├── __init__.py
+   │   ├── chain.py                    # LangChain LCEL: retriever→prompt→LLM
+   │   ├── retriever.py                # Hybrid: vector search + SQL fallback
+   │   ├── sql_agent.py                # LangChain SQL Agent (aggregate queries)
+   │   ├── query_router.py             # Phân loại câu hỏi → SQL hay Vector
+   │   └── prompts.py                  # System prompt VI, few-shot examples
+   │
+   ├── reporting/
+   │   ├── __init__.py
+   │   ├── scheduler.py                # APScheduler: chạy 23:55 mỗi ngày
+   │   ├── report_generator.py         # LLM tổng hợp daily stats → văn bản
+   │   └── templates/
+   │       ├── daily_report.txt        # Prompt template báo cáo ngày
+   │       └── weekly_report.txt       # Prompt template báo cáo tuần
+   │
+   ├── data/
+   │   └── seed_sample.py              # Tạo dữ liệu giả để test RAG
+   │
+   └── tests/
+       ├── test_sql_agent.py
+       ├── test_rag_chain.py
+       ├── test_query_router.py
+       └── sample_questions.txt        # 20 câu hỏi mẫu để eval
+
 
 ```
