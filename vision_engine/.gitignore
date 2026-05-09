@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Models
+weights/
+*.pt
+
+# Data
+datasets/
+data/raw/
+videos/
+
+# Outputs
+runs/
+outputs/
+logs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
