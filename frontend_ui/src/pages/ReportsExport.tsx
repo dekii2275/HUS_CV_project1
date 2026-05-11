@@ -11,10 +11,10 @@ import {
   ExternalLink,
   ShieldCheck
 } from 'lucide-react';
-import { Card } from '../components/UI/Card';
+import { Card } from '../components/common/Card';
 import { useLanguage } from '../context/LanguageContext';
-import { cn } from '../lib/utils';
-import { TacticalDatePicker } from '../components/UI/TacticalDatePicker';
+import { cn } from '../utils/utils';
+import { TacticalDatePicker } from '../components/common/TacticalDatePicker';
 import { isAfter } from 'date-fns';
 
 const RECENT_REPORTS = [

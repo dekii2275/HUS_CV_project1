@@ -26,9 +26,9 @@ import {
   Layers,
   Zap
 } from 'lucide-react';
-import { Card } from '../components/UI/Card';
+import { Card } from '../components/common/Card';
 import { useLanguage } from '../context/LanguageContext';
-import { cn } from '../lib/utils';
+import { cn } from '../utils/utils';
 
 const VOLUME_DATA = [
   { time: '00:00', volume: 420 },

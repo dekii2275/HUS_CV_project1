@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Incident } from '../../types';
-import { cn } from '../../lib/utils';
+import { cn } from '../../utils/utils';
 import { AlertTriangle, MapPin, ZoomIn, ZoomOut, Maximize, X, Clock, Activity, Shield, MessageSquare } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Layout } from './components/Layout/Layout';
+import { Layout } from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import IncidentLog from './pages/IncidentLog';
@@ -14,7 +14,7 @@ import TrafficAnalytics from './pages/TrafficAnalytics';
 import LiveMonitoring from './pages/LiveMonitoring';
 import MapCenter from './pages/MapCenter';
 import ReportsExport from './pages/ReportsExport';
-import { Card } from './components/UI/Card';
+import { Card } from './components/common/Card';
 import { useLanguage } from './context/LanguageContext';
 
 // Tactical Placeholder component for other pages

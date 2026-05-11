@@ -11,10 +11,10 @@ import {
   Activity,
   FileText
 } from 'lucide-react';
-import { Card } from '../components/UI/Card';
-import { Badge } from '../components/UI/Badge';
+import { Card } from '../components/common/Card';
+import { Badge } from '../components/common/Badge';
 import { useLanguage } from '../context/LanguageContext';
-import { cn } from '../lib/utils';
+import { cn } from '../utils/utils';
 
 import { 
   collection, 

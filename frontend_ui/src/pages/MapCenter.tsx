@@ -13,9 +13,9 @@ import {
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { Card } from '../components/UI/Card';
+import { Card } from '../components/common/Card';
 import { useLanguage } from '../context/LanguageContext';
-import { cn } from '../lib/utils';
+import { cn } from '../utils/utils';
 import { useLocation } from '../context/LocationContext';
 
 // Fix for default marker icons in Leaflet + React

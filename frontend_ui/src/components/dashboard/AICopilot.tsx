@@ -1,7 +1,7 @@
 import React from 'react';
 import { Bot, Send, X, Route, History, FileSearch, Activity, Sparkles, User, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../utils/utils';
 import { useLanguage } from '../../context/LanguageContext';
 import { GoogleGenAI } from "@google/genai";
 

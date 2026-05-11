@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, Bell, Clock, User, AlertTriangle } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../utils/utils';
 import { useLanguage } from '../../context/LanguageContext';
 import { useUser } from '../../context/UserContext';
 

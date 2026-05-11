@@ -12,9 +12,9 @@ import {
   Scan,
   Database
 } from 'lucide-react';
-import { Card } from '../components/UI/Card';
+import { Card } from '../components/common/Card';
 import { useLanguage } from '../context/LanguageContext';
-import { cn } from '../lib/utils';
+import { cn } from '../utils/utils';
 
 interface VehicleResult {
   plate: string;

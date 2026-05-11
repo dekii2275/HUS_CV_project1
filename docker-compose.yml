@@ -1,6 +1,6 @@
 services:
   db:
-    image: pgvector/pgvector:pg15
+    image: timescale/timescaledb-ha:pg15
     container_name: itms-db
     restart: always
     environment:
@@ -11,6 +11,7 @@ services:
       - "${DB_PORT_EXTERNAL}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./db_init:/docker-entrypoint-initdb.d
     networks:
       - itms-network
     healthcheck:

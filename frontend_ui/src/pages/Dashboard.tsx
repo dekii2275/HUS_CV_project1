@@ -23,10 +23,10 @@ import {
   Zap,
   RefreshCcw
 } from 'lucide-react';
-import { Card } from '../components/UI/Card';
-import { Badge } from '../components/UI/Badge';
-import { cn } from '../lib/utils';
-import { IncidentMap } from '../components/Dashboard/IncidentMap';
+import { Card } from '../components/common/Card';
+import { Badge } from '../components/common/Badge';
+import { cn } from '../utils/utils';
+import { IncidentMap } from '../components/dashboard/IncidentMap';
 import { Incident } from '../types';
 
 import { motion, AnimatePresence } from 'motion/react';

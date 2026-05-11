@@ -1,29 +1,25 @@
 import React from 'react';
 import { 
   Camera, 
-  Wifi, 
   Maximize2, 
   Scan, 
   Activity, 
   Cpu, 
   Radio, 
   MapPin,
-  RefreshCw,
   X,
   Minimize2
 } from 'lucide-react';
-import { Card } from '../components/UI/Card';
+import { Card } from '../components/common/Card';
+import { CameraTelemetry } from '../components/dashboard/CameraTelemetry';
+import { CameraLiveModal } from '../components/dashboard/CameraLiveModal';
 import { useLanguage } from '../context/LanguageContext';
-import { cn } from '../lib/utils';
+import { cn } from '../utils/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
 const CAMERA_NODES = [
-  { id: 'CAM W11', location: 'I-95 Northbound', status: 'ACTIVE', bit: '4.2 MB/S', latency: '18ms' },
-  { id: 'CAM C04', location: 'Main St Intersection', status: 'ACTIVE', bit: '3.8 MB/S', latency: '12ms' },
-  { id: 'CAM E01', location: 'Tunnel West Entrance', status: 'ACTIVE', bit: '5.1 MB/S', latency: '24ms' },
-  { id: 'CAM S12', location: 'Beltway Junction', status: 'OFFLINE', bit: '0.0 MB/S', latency: '---' },
-  { id: 'CAM W03', location: 'River Bridge', status: 'ACTIVE', bit: '2.9 MB/S', latency: '31ms' },
-  { id: 'CAM N08', location: 'Rail Buffer Zone', status: 'ACTIVE', bit: '4.5 MB/S', latency: '14ms' },
+  { id: 'cam_w11', location: 'I-95 Northbound', status: 'ACTIVE', bit: '4.2 MB/S', latency: '18ms', url: 'https://www.youtube.com/watch?v=1EamsYw_Xyo' },
+  { id: 'cam_c04', location: 'Main St Intersection', status: 'ACTIVE', bit: '3.8 MB/S', latency: '12ms', url: 'https://www.youtube.com/watch?v=5_XvR7O_4S8' },
 ];
 
 export default function LiveMonitoring() {
@@ -31,19 +27,29 @@ export default function LiveMonitoring() {
   const [isZoomed, setIsZoomed] = React.useState(false);
   const [cameras, setCameras] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [selectedCamera, setSelectedCamera] = React.useState<any | null>(null);
 
   React.useEffect(() => {
     // Determine API Base URL dynamically
-    // Use window.location.hostname for local dev to avoid localhost/127.0.0.1 mismatch
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:18000`;
     
-    fetch(`${apiBaseUrl}/api/v1/cameras`)
+    fetch(`${apiBaseUrl}/api/v1/cameras/`)
       .then(res => {
          if (!res.ok) throw new Error("Network response was not ok");
          return res.json();
       })
       .then(data => {
-        setCameras(data);
+        // Map dữ liệu từ Database sang định dạng UI yêu cầu
+        const mappedData = data.map((cam: any) => ({
+          id: cam.camera_id,
+          name: cam.camera_id.toUpperCase().replace('_', ' '),
+          status: cam.is_active ? 'ACTIVE' : 'OFFLINE',
+          location: cam.location ? `COORD: ${cam.location[0]}, ${cam.location[1]}` : 'Unknown Location',
+          bitrate: cam.is_active ? 'CONNECTED' : '0.0 MB/S',
+          latency: cam.is_active ? 'STABLE' : '---',
+          url: cam.rtsp_url // Lưu trữ URL để dùng cho Modal
+        }));
+        setCameras(mappedData);
         setLoading(false);
       })
       .catch(err => {
@@ -52,6 +58,35 @@ export default function LiveMonitoring() {
         setLoading(false);
       });
   }, []);
+
+  const handleCameraClick = (cam: any) => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:18000`;
+    
+    // Gọi API để lấy link stream chuẩn từ Backend
+    fetch(`${apiBaseUrl}/api/v1/cameras/${cam.id}/stream`)
+      .then(res => {
+        if (!res.ok) throw new Error("Stream not available");
+        return res.json();
+      })
+      .then(streamData => {
+        setSelectedCamera({
+          id: cam.id,
+          name: cam.name,
+          url: streamData.stream_url
+        });
+      })
+      .catch(err => {
+        console.error("Failed to get stream:", err);
+        // Fallback nếu API stream lỗi nhưng vẫn có url trong local state
+        if (cam.url) {
+          setSelectedCamera({
+            id: cam.id,
+            name: cam.name,
+            url: cam.url
+          });
+        }
+      });
+  };
 
   const CameraView = ({ zoomed = false, onToggleZoom }: { zoomed?: boolean, onToggleZoom: () => void }) => (
     <div className={cn(
@@ -199,46 +234,14 @@ export default function LiveMonitoring() {
 
         {/* Sidebar Controls */}
         <div className="lg:col-span-1 space-y-6">
-            <Card title={t('monitor.telemetry')} subtitle={t('monitor.signal_strength')}>
-              <div className="p-6 space-y-6 bg-surface">
-                 <div className="space-y-4">
-                    {loading ? (
-                       <div className="text-center text-brand-primary text-xs font-mono animate-pulse uppercase">
-                          FETCHING NODE TELEMETRY...
-                       </div>
-                    ) : (
-                      cameras.map(cam => (
-                        <div key={cam.id} className="flex items-center gap-4 group cursor-pointer hover:bg-background-muted p-2 -mx-2 transition-all">
-                           <div className={cn(
-                             "p-2 border transition-all",
-                             cam.status === 'ACTIVE' ? "border-brand-primary/20 text-brand-primary bg-brand-primary/5" : "border-border-subtle text-text-muted opacity-30"
-                           )}>
-                             <Wifi size={14} />
-                           </div>
-                           <div className="flex-1">
-                              <div className="flex justify-between items-start">
-                                 <span className="text-[9px] font-bold text-text-primary uppercase tracking-widest">{cam.name || cam.id}</span>
-                                 <span className={cn("text-[7px] font-mono font-bold", cam.status === 'ACTIVE' ? "text-brand-success" : "text-brand-error")}>{cam.status}</span>
-                              </div>
-                              <div className="text-[8px] text-text-muted uppercase font-mono tracking-tighter italic">{cam.location}</div>
-                           </div>
-                           <div className="text-right flex flex-col items-end">
-                              <span className="text-[8px] font-mono text-text-primary">{cam.bitrate || cam.bit}</span>
-                              <span className="text-[6px] font-mono text-text-muted">{cam.latency}</span>
-                           </div>
-                        </div>
-                      ))
-                    )}
-                 </div>
+            <CameraTelemetry 
+              cameras={cameras} 
+              loading={loading} 
+              onRescan={() => console.log("Rescanning nodes...")} 
+              onCameraClick={handleCameraClick}
+            />
 
-                 <button className="w-full py-3 bg-background-muted border border-border-subtle hover:border-brand-primary/40 text-[9px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all group">
-                    <RefreshCw size={12} className="group-hover:rotate-180 transition-transform duration-500 text-brand-primary" />
-                    {t('monitor.rescan')}
-                 </button>
-              </div>
-           </Card>
-
-           <Card title={t('monitor.auto_analysis')} subtitle={t('monitor.motion_vectoring')}>
+            <Card title={t('monitor.auto_analysis')} subtitle={t('monitor.motion_vectoring')}>
               <div className="p-6 space-y-4 bg-surface">
                  <div className="flex items-center gap-3">
                     <div className="p-2 bg-brand-primary/10 text-brand-primary">
@@ -259,9 +262,16 @@ export default function LiveMonitoring() {
                     {t('monitor.pattern_anomalies')}
                  </p>
               </div>
-           </Card>
+            </Card>
         </div>
       </div>
+
+      {/* Camera Live Preview Modal */}
+      <CameraLiveModal 
+        isOpen={!!selectedCamera} 
+        onClose={() => setSelectedCamera(null)} 
+        camera={selectedCamera} 
+      />
 
       {/* Expanded Zoomed View Overlay */}
       <AnimatePresence>

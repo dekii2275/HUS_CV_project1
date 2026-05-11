@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { NAVIGATION_ITEMS, FOOTER_NAVIGATION } from '../../constants';
-import { cn } from '../../lib/utils';
+import { cn } from '../../utils/utils';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 

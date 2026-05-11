@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from '../components/UI/Card';
+import { Card } from '../components/common/Card';
 import { 
   Sun, 
   Moon, 
@@ -16,7 +16,7 @@ import {
   LogIn,
   LogOut
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn } from '../utils/utils';
 
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';

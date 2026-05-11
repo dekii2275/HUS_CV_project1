@@ -2,8 +2,8 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
-import { AICopilot } from '../Dashboard/AICopilot';
-import { cn } from '../../lib/utils';
+import { AICopilot } from '../dashboard/AICopilot';
+import { cn } from '../../utils/utils';
 
 export const Layout = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
