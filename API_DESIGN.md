@@ -1,6 +1,6 @@
-# Kinetix Traffic Control - API Design Table (Current Architecture Compatible)
+# Kinetix Traffic Control - Bảng Thiết Kế API (Đồng Bộ Với Kiến Trúc Hiện Tại)
 
-# Current Architecture
+# Kiến trúc hiện tại
 
 ```text
 Frontend: React + Firebase Auth
@@ -12,59 +12,59 @@ Storage: PostgreSQL / Object Storage
 
 ---
 
-# API DESIGN TABLE
+# BẢNG THIẾT KẾ API
 
-| API | Input | Output | Expected Logic |
+| API | Đầu vào | Đầu ra | Logic dự kiến |
 |---|---|---|---|
-| GET /api/v1/cameras | query: status/location | camera list | Query cameras table |
-| GET /api/v1/cameras/{camera_id} | camera_id | camera detail | Query camera metadata |
-| POST /api/v1/cameras | camera payload | created camera | Validate + insert camera |
-| PATCH /api/v1/cameras/{camera_id} | metadata update | updated camera | Update metadata |
-| DELETE /api/v1/cameras/{camera_id} | camera_id | success status | Soft delete camera |
-| GET /api/v1/cameras/{camera_id}/stream | camera_id | stream token/url | Generate streaming access |
-| GET /api/v1/cameras/{camera_id}/health | camera_id | online/offline status | Read cached health status |
-| POST /api/v1/ingestion/frame-batch | frame batch payload | ingestion result | Insert frame + detections + events |
-| POST /api/v1/frames | frame metadata | frame_id | Insert frame record |
-| POST /api/v1/detections/batch | detection array | insert summary | Bulk insert detections |
-| POST /api/v1/events | events array | insert summary | Bulk insert events |
-| GET /api/v1/events | filters/time range | event list | Query events hypertable |
-| GET /api/v1/events/{event_id} | event_id | event detail | Query single event |
-| PATCH /api/v1/events/{event_id}/status | status | updated event | Update event state |
-| GET /api/v1/dashboard/summary | optional filters | KPI summary | Aggregate dashboard metrics |
-| GET /api/v1/analytics/traffic-volume | from/to/bucket/camera_id | traffic chart | Timescale aggregation |
-| GET /api/v1/analytics/vehicle-mix | filters | class distribution | Aggregate detections by class |
-| GET /api/v1/analytics/event-frequency | from/to/bucket | event chart | Aggregate event frequency |
-| GET /api/v1/analytics/camera-load | from/to | camera workload | Count detections/events per camera |
-| GET /api/v1/tracks/{track_id} | track_id | movement history | Query detection timeline |
-| GET /api/v1/tracks/{track_id}/timeline | track_id | trajectory | Return ordered tracking points |
-| GET /api/v1/vehicles/search | plate/class/color | vehicle list | Search vehicle observations |
-| GET /api/v1/vehicles/{vehicle_id} | vehicle_id | vehicle detail | Query vehicle metadata |
-| GET /api/v1/vehicles/{vehicle_id}/history | vehicle_id | movement history | Query vehicle observations |
-| GET /api/v1/violations | filters | violations list | Query violations table |
-| GET /api/v1/violations/{violation_id} | violation_id | violation detail | Query violation |
-| PATCH /api/v1/violations/{violation_id}/status | status | updated violation | Update violation state |
-| POST /api/v1/violations | violation payload | created violation | Insert violation |
-| GET /api/v1/operators/me | Firebase token | operator profile | Verify Firebase token + query user |
-| PATCH /api/v1/operators/me | profile update | updated profile | Update operator metadata |
-| GET /api/v1/operators | filters | operators list | Admin query operators |
-| GET /api/v1/settings | Firebase token | user settings | Query user settings |
-| PATCH /api/v1/settings | settings payload | updated settings | Persist UI settings |
-| POST /api/v1/auth/verify | Firebase ID token | verification result | Verify Firebase token |
-| POST /api/v1/auth/sync-user | Firebase user payload | synced user | Sync Firebase user to PostgreSQL |
+| GET /api/v1/cameras | query: status/location | danh sách camera | Query bảng cameras |
+| GET /api/v1/cameras/{camera_id} | camera_id | chi tiết camera | Query metadata camera |
+| POST /api/v1/cameras | payload camera | camera mới được tạo | Validate + insert camera |
+| PATCH /api/v1/cameras/{camera_id} | metadata cập nhật | camera đã cập nhật | Update metadata |
+| DELETE /api/v1/cameras/{camera_id} | camera_id | trạng thái thành công | Soft delete camera |
+| GET /api/v1/cameras/{camera_id}/stream | camera_id | token/url stream | Tạo quyền truy cập stream |
+| GET /api/v1/cameras/{camera_id}/health | camera_id | trạng thái online/offline | Đọc trạng thái health từ cache |
+| POST /api/v1/ingestion/frame-batch | payload batch frame | kết quả ingestion | Insert frame + detections + events |
+| POST /api/v1/frames | metadata frame | frame_id | Insert frame record |
+| POST /api/v1/detections/batch | mảng detections | tóm tắt insert | Bulk insert detections |
+| POST /api/v1/events | mảng events | tóm tắt insert | Bulk insert events |
+| GET /api/v1/events | filters/time range | danh sách sự kiện | Query hypertable events |
+| GET /api/v1/events/{event_id} | event_id | chi tiết sự kiện | Query một event |
+| PATCH /api/v1/events/{event_id}/status | status | event đã cập nhật | Update trạng thái event |
+| GET /api/v1/dashboard/summary | optional filters | KPI dashboard | Aggregate metrics dashboard |
+| GET /api/v1/analytics/traffic-volume | from/to/bucket/camera_id | biểu đồ lưu lượng | Aggregate bằng TimescaleDB |
+| GET /api/v1/analytics/vehicle-mix | filters | phân bố phương tiện | Aggregate detections theo class |
+| GET /api/v1/analytics/event-frequency | from/to/bucket | biểu đồ sự kiện | Aggregate tần suất sự kiện |
+| GET /api/v1/analytics/camera-load | from/to | tải camera | Đếm detections/events theo camera |
+| GET /api/v1/tracks/{track_id} | track_id | lịch sử di chuyển | Query timeline detection |
+| GET /api/v1/tracks/{track_id}/timeline | track_id | trajectory | Trả trajectory theo thời gian |
+| GET /api/v1/vehicles/search | plate/class/color | danh sách phương tiện | Search vehicle observations |
+| GET /api/v1/vehicles/{vehicle_id} | vehicle_id | chi tiết phương tiện | Query metadata vehicle |
+| GET /api/v1/vehicles/{vehicle_id}/history | vehicle_id | lịch sử di chuyển | Query observations vehicle |
+| GET /api/v1/violations | filters | danh sách vi phạm | Query bảng violations |
+| GET /api/v1/violations/{violation_id} | violation_id | chi tiết vi phạm | Query violation |
+| PATCH /api/v1/violations/{violation_id}/status | status | violation đã cập nhật | Update trạng thái violation |
+| POST /api/v1/violations | payload violation | violation mới | Insert violation |
+| GET /api/v1/operators/me | Firebase token | profile operator | Verify token Firebase + query user |
+| PATCH /api/v1/operators/me | profile update | profile đã cập nhật | Update metadata operator |
+| GET /api/v1/operators | filters | danh sách operator | Query operator cho admin |
+| GET /api/v1/settings | Firebase token | settings người dùng | Query user settings |
+| PATCH /api/v1/settings | payload settings | settings đã cập nhật | Persist UI settings |
+| POST /api/v1/auth/verify | Firebase ID token | kết quả xác thực | Verify Firebase token |
+| POST /api/v1/auth/sync-user | payload user Firebase | user đã đồng bộ | Đồng bộ user Firebase vào PostgreSQL |
 | GET /api/v1/ws/realtime | websocket token | realtime stream | Subscribe realtime events |
-| GET /api/v1/health | none | system health | Aggregate service health |
-| GET /api/v1/health/db | none | db health | Ping PostgreSQL |
-| GET /api/v1/health/vision-engine | none | AI pipeline status | Check ingestion service |
-| GET /api/v1/metrics | none | Prometheus metrics | Export backend metrics |
-| POST /api/v1/dev/seed | dataset config | seed result | Insert demo data |
-| DELETE /api/v1/dev/seed | dataset config | clear result | Remove demo data |
+| GET /api/v1/health | none | trạng thái hệ thống | Aggregate trạng thái service |
+| GET /api/v1/health/db | none | trạng thái database | Ping PostgreSQL |
+| GET /api/v1/health/vision-engine | none | trạng thái AI pipeline | Check ingestion service |
+| GET /api/v1/metrics | none | metrics Prometheus | Export metrics backend |
+| POST /api/v1/dev/seed | config dataset | kết quả seed | Insert dữ liệu demo |
+| DELETE /api/v1/dev/seed | config dataset | kết quả clear | Xóa dữ liệu demo |
 | GET /api/v1/audit-logs | filters | audit logs | Query immutable logs |
 
 ---
 
-# FIREBASE AUTH INTEGRATION NOTES
+# GHI CHÚ TÍCH HỢP FIREBASE AUTH
 
-# Recommended Architecture
+# Kiến trúc khuyến nghị
 
 ```text
 Firebase Auth
@@ -80,11 +80,11 @@ PostgreSQL / TimescaleDB
 
 ---
 
-# IMPORTANT DESIGN NOTES
+# LƯU Ý QUAN TRỌNG
 
-# 1. DO NOT CREATE CUSTOM LOGIN SYSTEM
+# 1. KHÔNG TỰ VIẾT HỆ THỐNG LOGIN
 
-## Do NOT implement:
+## Không implement:
 
 ```text
 POST /login
@@ -92,18 +92,18 @@ POST /register
 POST /refresh-token
 ```
 
-Firebase already handles:
+Firebase đã xử lý:
 - authentication
-- password reset
+- reset password
 - OAuth
 - session management
 - refresh token lifecycle
 
 ---
 
-# 2. BACKEND ONLY VERIFIES FIREBASE TOKEN
+# 2. BACKEND CHỈ VERIFY FIREBASE TOKEN
 
-## FastAPI responsibility:
+## Nhiệm vụ của FastAPI:
 
 ```text
 verify Firebase ID token
@@ -113,7 +113,7 @@ authorize request
 
 ---
 
-# Required package
+# Package cần cài
 
 ```bash
 pip install firebase-admin
@@ -121,7 +121,7 @@ pip install firebase-admin
 
 ---
 
-# Example verification flow
+# Ví dụ flow verify
 
 ```python
 from firebase_admin import auth
@@ -134,9 +134,9 @@ email = decoded_token["email"]
 
 ---
 
-# 3. USERS TABLE IS STILL REQUIRED
+# 3. VẪN CẦN BẢNG users
 
-## Required schema
+## Schema khuyến nghị
 
 ```sql
 CREATE TABLE users (
@@ -150,10 +150,10 @@ CREATE TABLE users (
 
 ---
 
-# Purpose of users table
+# Mục đích của bảng users
 
 ```text
-store:
+lưu:
 - role
 - permissions
 - metadata
@@ -162,7 +162,7 @@ store:
 
 ---
 
-# Do NOT store
+# Không lưu
 
 ```text
 password
@@ -172,16 +172,16 @@ oauth secrets
 
 ---
 
-# 4. REQUEST AUTH FLOW
+# 4. FLOW REQUEST AUTH
 
 ## Frontend
 
 ```text
 Firebase login
 ↓
-receive ID token
+nhận ID token
 ↓
-send Authorization Bearer token
+gửi Authorization Bearer token
 ```
 
 ---
@@ -193,14 +193,14 @@ verify token
 ↓
 inject current user
 ↓
-allow protected API access
+cho phép truy cập API protected
 ```
 
 ---
 
 # 5. FASTAPI AUTH MIDDLEWARE
 
-## Recommended structure
+## Structure khuyến nghị
 
 ```text
 backend_api/
@@ -212,7 +212,7 @@ backend_api/
 
 ---
 
-# Example dependency
+# Ví dụ dependency
 
 ```python
 def get_current_user():
@@ -225,7 +225,7 @@ def get_current_user():
 
 # 6. ROLE-BASED ACCESS CONTROL
 
-## Recommended roles
+## Role khuyến nghị
 
 ```text
 ADMIN
@@ -236,7 +236,7 @@ AI_ANALYST
 
 ---
 
-# Example
+# Ví dụ
 
 ```python
 if user["role"] != "ADMIN":
@@ -245,9 +245,9 @@ if user["role"] != "ADMIN":
 
 ---
 
-# 7. FIRESTORE SHOULD NOT STORE INCIDENTS
+# 7. KHÔNG LƯU INCIDENTS TRONG FIRESTORE
 
-## BAD
+## Sai
 
 ```text
 Firestore:
@@ -261,9 +261,9 @@ PostgreSQL:
 
 ---
 
-# GOOD
+## Đúng
 
-## PostgreSQL is single source of truth
+### PostgreSQL là nguồn dữ liệu chính
 
 ```text
 PostgreSQL:
@@ -276,7 +276,7 @@ PostgreSQL:
 
 ---
 
-# Firebase should only handle
+# Firebase chỉ nên xử lý
 
 ```text
 authentication
@@ -287,19 +287,19 @@ optional user preferences
 
 # 8. WEBSOCKET AUTH
 
-## Recommended flow
+## Flow khuyến nghị
 
 ```text
-Frontend sends Firebase token
+Frontend gửi Firebase token
 ↓
-Backend verifies token
+Backend verify token
 ↓
-WebSocket session established
+Thiết lập WebSocket session
 ```
 
 ---
 
-# 9. REQUIRED DATABASE EXTENSIONS
+# 9. DATABASE EXTENSIONS BẮT BUỘC
 
 ## PostgreSQL
 
@@ -310,7 +310,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 ---
 
-# 10. REQUIRED NEW TABLES
+# 10. BẢNG MỚI CẦN THÊM
 
 ## vehicle_observations
 
@@ -344,7 +344,7 @@ CREATE TABLE violations (
 
 ---
 
-# 11. REQUIRED BACKEND FILES
+# 11. FILE BACKEND CẦN THÊM
 
 ```text
 backend_api/
@@ -361,7 +361,7 @@ backend_api/
 
 ---
 
-# 12. REQUIRED MODEL ADDITIONS
+# 12. MODEL CẦN THÊM
 
 ## models.py
 
@@ -376,11 +376,9 @@ User
 
 ---
 
-# 13. REQUIRED FRONTEND CHANGES
+# 13. FRONTEND CẦN SỬA
 
-## Replace Firestore queries
-
-### Current
+## Bỏ Firestore query ở
 
 ```text
 Dashboard.tsx
@@ -390,7 +388,7 @@ VehicleSearch.tsx
 
 ---
 
-## Replace with
+## Thay bằng
 
 ```text
 axios/fetch → FastAPI endpoints
@@ -398,7 +396,7 @@ axios/fetch → FastAPI endpoints
 
 ---
 
-# 14. RECOMMENDED IMPLEMENTATION ORDER
+# 14. THỨ TỰ IMPLEMENT KHUYẾN NGHỊ
 
 ## Phase 1
 
