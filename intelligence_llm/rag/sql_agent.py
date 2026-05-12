@@ -21,7 +21,7 @@ def get_llm():
         )
 
 def create_traffic_sql_agent():
-    db_url = os.getenv("POSTGRES_URL")
+    db_url = os.getenv("POSTGRES_URL", "postgresql://itms_user:itms_pass@localhost:5432/itms_db")
     # Tối ưu: Chỉ cho phép Agent truy cập vào các bảng cần thiết
     db = SQLDatabase.from_uri(db_url, include_tables=['vehicle_counts', 'traffic_events', 'violations'])
     

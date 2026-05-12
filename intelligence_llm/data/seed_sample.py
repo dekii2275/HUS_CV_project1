@@ -21,7 +21,6 @@ SEVERITIES = ["low", "medium", "high"]
 VIOLATION_TYPES = ["wrong_way", "illegal_stop", "speeding"]
 
 def is_peak_hour(dt: datetime) -> bool:
-    """Kiểm tra có phải khung giờ cao điểm tại Việt Nam không (7h-9h và 17h-19h)"""
     hour = dt.hour
     return (7 <= hour < 9) or (17 <= hour < 19)
 
@@ -29,9 +28,61 @@ async def seed_data():
     print("🚀 Bắt đầu sinh dữ liệu mẫu (Seed Data) cho TimescaleDB...")
     try:
         conn = await asyncpg.connect(POSTGRES_URL)
+        print("🔗 Kết nối cơ sở dữ liệu thành công.")
     except Exception as e:
         print(f"❌ Không thể kết nối DB: {e}. Vui lòng kiểm tra lại cấu hình .env hoặc Docker.")
         return
+
+    # --- TỰ ĐỘNG KHỞI TẠO BẢNG NẾU CHƯA CÓ ---
+    print("🛠️ Đang kiểm tra và khởi tạo cấu trúc bảng (Schema)...")
+    await conn.execute("CREATE EXTENSION IF NOT EXISTS timescaledb;")
+    
+    await conn.execute("""
+    CREATE TABLE IF NOT EXISTS vehicle_counts (
+        time TIMESTAMPTZ NOT NULL, camera_id VARCHAR(50) NOT NULL, location VARCHAR(100),
+        motorbike INTEGER DEFAULT 0, car INTEGER DEFAULT 0, truck INTEGER DEFAULT 0,
+        bus INTEGER DEFAULT 0, bicycle INTEGER DEFAULT 0, total INTEGER DEFAULT 0,
+        avg_speed FLOAT, density FLOAT
+    );
+    """)
+    try:
+        await conn.execute("SELECT create_hypertable('vehicle_counts', 'time', if_not_exists => TRUE);")
+    except Exception:
+        pass
+
+    await conn.execute("""
+    CREATE TABLE IF NOT EXISTS traffic_events (
+        id SERIAL, time TIMESTAMPTZ NOT NULL, camera_id VARCHAR(50) NOT NULL,
+        event_type VARCHAR(50), severity VARCHAR(20), description TEXT,
+        vehicle_id VARCHAR(50), location VARCHAR(100), resolved_at TIMESTAMPTZ,
+        PRIMARY KEY (id, time)
+    );
+    """)
+    try:
+        await conn.execute("SELECT create_hypertable('traffic_events', 'time', if_not_exists => TRUE);")
+    except Exception:
+        pass
+
+    await conn.execute("""
+    CREATE TABLE IF NOT EXISTS violations (
+        id SERIAL, time TIMESTAMPTZ NOT NULL, camera_id VARCHAR(50),
+        violation_type VARCHAR(50), vehicle_id VARCHAR(50), speed FLOAT,
+        image_path TEXT, location VARCHAR(100),
+        PRIMARY KEY (id, time)
+    );
+    """)
+    try:
+        await conn.execute("SELECT create_hypertable('violations', 'time', if_not_exists => TRUE);")
+    except Exception:
+        pass
+
+    await conn.execute("""
+    CREATE TABLE IF NOT EXISTS daily_reports (
+        id SERIAL PRIMARY KEY, report_date DATE NOT NULL UNIQUE,
+        content TEXT, summary JSONB, created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    """)
+    print("✅ Đã chuẩn bị xong cấu trúc bảng.")
 
     # Xác định khoảng thời gian sinh data: 7 ngày gần nhất
     end_time = datetime.now()
@@ -42,20 +93,17 @@ async def seed_data():
     violations_data = []
     
     current_time = start_time
-    # Lặp qua từng phút trong 7 ngày (~10,080 phút)
     while current_time <= end_time:
         for cam in CAMERAS:
             peak = is_peak_hour(current_time)
             
-            # 1. Sinh dữ liệu đếm xe (vehicle_counts)
-            # Đặc thù Việt Nam: Xe máy (motorbike) luôn chiếm tỷ trọng lớn nhất
             if peak:
                 motorbike = random.randint(150, 300)
                 car = random.randint(30, 70)
                 truck = random.randint(2, 8)
                 bus = random.randint(3, 10)
                 bicycle = random.randint(5, 15)
-                avg_speed = random.uniform(15.0, 30.0)  # Giờ cao điểm đi chậm
+                avg_speed = random.uniform(15.0, 30.0)
                 density = random.uniform(0.6, 0.9)
             else:
                 motorbike = random.randint(20, 80)
@@ -73,8 +121,7 @@ async def seed_data():
                 motorbike, car, truck, bus, bicycle, total, avg_speed, density
             ))
             
-            # 2. Sinh ngẫu nhiên sự kiện giao thông (traffic_events) - Xác suất nhỏ
-            if random.random() < 0.002:  # 0.2% cơ hội xảy ra sự kiện mỗi phút trên mỗi cam
+            if random.random() < 0.002:
                 event_type = random.choice(EVENT_TYPES)
                 severity = random.choice(SEVERITIES) if event_type != "accident" else "high"
                 desc_map = {
@@ -90,8 +137,7 @@ async def seed_data():
                     desc_map[event_type], f"TRK_{random.randint(1000, 9999)}", cam["location"], resolved_at
                 ))
                 
-            # 3. Sinh ngẫu nhiên vi phạm (violations)
-            if random.random() < 0.003:  # 0.3% cơ hội xảy ra vi phạm
+            if random.random() < 0.003:
                 v_type = random.choice(VIOLATION_TYPES)
                 speed = random.uniform(65.0, 90.0) if v_type == "speeding" else None
                 
@@ -104,7 +150,6 @@ async def seed_data():
                 
         current_time += timedelta(minutes=1)
 
-    # Tiến hành Bulk Insert vào database
     print(f"📦 Đang nạp {len(vehicle_counts_data)} dòng vào 'vehicle_counts'...")
     await conn.executemany(
         """
