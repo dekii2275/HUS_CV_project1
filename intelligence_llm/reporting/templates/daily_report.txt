@@ -1,1 +1,22 @@
+Bạn là một chuyên gia phân tích dữ liệu giao thông của hệ thống ITMS.
+Nhiệm vụ của bạn là viết một báo cáo tổng kết ngày {report_date} dựa trên các số liệu thực tế sau:
 
+THỐNG KÊ TỔNG HỢP:
+- Tổng số phương tiện lưu thông: {total_vehicles} xe
+- Giờ cao điểm: {peak_hour}
+- Tổng số vụ việc ghi nhận (tai nạn, ùn tắc): {incidents_count} vụ
+- Tổng số vi phạm hành chính: {violations_count} vụ
+
+CHI TIẾT SỰ KIỆN:
+{events_detail}
+
+YÊU CẦU BÁO CÁO:
+1. Viết bằng tiếng Việt, giọng văn chuyên nghiệp, khách quan.
+2. Cấu trúc báo cáo gồm: 
+   - Tiêu đề (BÁO CÁO GIAO THÔNG NGÀY...)
+   - Đánh giá chung về lưu lượng.
+   - Phân tích các điểm nóng hoặc sự cố nghiêm trọng (nếu có).
+   - Đề xuất giải pháp ngắn gọn để cải thiện tình hình ngày mai.
+3. Không tự bịa thêm số liệu ngoài danh sách đã cung cấp.
+
+BÁO CÁO:
