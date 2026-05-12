@@ -1,0 +1,21 @@
+# tests/sample_questions.txt
+1. Tổng số lượng xe qua CAM_01 ngày hôm nay? | sql
+2. Có vụ tai nạn nào xảy ra ở ngã tư Nguyễn Trãi lúc 7h sáng không? | vector
+3. So sánh lượng xe máy và ô tô trong giờ cao điểm chiều nay. | sql
+4. Liệt kê các xe vi phạm tốc độ tại Cầu vượt Chùa Bộc. | hybrid
+5. Vận tốc trung bình của xe bus hôm qua là bao nhiêu? | sql
+6. Mô tả tình trạng ùn tắc tại Quận 1 lúc 18h. | vector
+7. Trạm nào có mật độ giao thông cao nhất hiện tại? | sql
+8. Có xe nào đi ngược chiều ở CAM_02 không? | vector
+9. Báo cáo các sự kiện giao thông nghiêm trọng trong tuần qua. | hybrid
+10. Tổng số xe bus đã chạy qua Điện Biên Phủ sáng nay? | sql
+11. Tình hình giao thông tại Nguyễn Trãi lúc này thế nào? | hybrid
+12. Xe TRK_9999 có vi phạm gì không? | vector
+13. Thống kê lỗi dừng đỗ trái phép ngày 10/05. | sql
+14. Giờ cao điểm sáng nay bắt đầu từ mấy giờ? | sql
+15. Vụ va chạm lúc 8h đã được xử lý chưa? | vector
+16. Hiệu suất lưu thông trung bình của cả hệ thống hôm qua? | sql
+17. Tìm các hình ảnh vi phạm tại CAM_03. | vector
+18. Đánh giá mật độ giao thông dựa trên lượng xe máy hôm nay. | hybrid
+19. Có bao nhiêu xe tải đi vào thành phố giờ cấm? | sql
+20. Phân tích nguyên nhân ùn tắc tại ngã tư Khuất Duy Tiến. | hybrid
