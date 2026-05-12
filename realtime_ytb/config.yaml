@@ -15,5 +15,5 @@ video:
 # Danh sách các camera (YouTube URL hoặc RTSP/File)
 cameras:
   cam_traffic_1: "https://www.youtube.com/watch?v=1EamsYw_Xyo"
-  cam_traffic_2: "https://www.youtube.com/watch?v=5_XvR7O_4S8"
+  cam_traffic_2: "https://www.youtube.com/watch?v=sJvEFrG0wq0"
   # Bạn có thể thêm nhiều cam nữa ở đây

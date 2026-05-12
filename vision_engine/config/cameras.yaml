@@ -1,0 +1,60 @@
+# config/cameras.yaml
+# Camera configurations for Vision Engine
+
+cameras:
+  cam_01:
+    name: "Ngã tư Lý Thường Kiệt"
+    rtsp_url: "rtsp://admin:password@192.168.1.101:554/stream1"
+    frame_size: [1920, 1080]
+    fps: 25
+    roi:
+      points:
+        - [0, 540]
+        - [864, 356]
+        - [1632, 356]
+        - [1632, 1080]
+        - [0, 1080]
+    perspective:
+      src_points: [[110, 580], [1040, 315], [1675, 405], [1315, 1065]]
+      dst_points: [[250, 650], [250, 50], [550, 50], [550, 650]]
+      output_size: [800, 600]
+      meters_per_pixel_x: 0.058
+      meters_per_pixel_y: 0.065
+
+  cam_02:
+    name: "Đường Nguyễn Trãi"
+    rtsp_url: "rtsp://admin:password@192.168.1.102:554/stream1"
+    frame_size: [1280, 720]
+    fps: 30
+    roi:
+      points:
+        - [80, 720]
+        - [350, 320]
+        - [930, 320]
+        - [1200, 720]
+    perspective:
+      src_points: [[350, 320], [930, 320], [1200, 720], [80, 720]]
+      dst_points: [[50, 30], [600, 30], [600, 480], [50, 480]]
+      output_size: [650, 510]
+      meters_per_pixel_x: 0.062
+      meters_per_pixel_y: 0.070
+
+  youtube_demo:
+    name: "Ngã tư Lý Thường Kiệt"
+    rtsp_url: "rtsp://admin:password@192.168.1.101:554/stream1"
+    youtube_url: "https://www.youtube.com/live/G_G8A6JU_LI?si=FAQlxrya3JX5Kldy"
+    frame_size: [1920, 1080]
+    fps: 25
+    roi:
+      points:
+        - [0, 540]
+        - [864, 356]
+        - [1632, 356]
+        - [1632, 1080]
+        - [0, 1080]
+    perspective:
+      src_points: [[110, 580], [1040, 315], [1675, 405], [1315, 1065]]
+      dst_points: [[250, 650], [250, 50], [550, 50], [550, 650]]
+      output_size: [800, 600]
+      meters_per_pixel_x: 0.058
+      meters_per_pixel_y: 0.065

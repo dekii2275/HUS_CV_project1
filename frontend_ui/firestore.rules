@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- User Validation ---
+    function isValidUser(data) {
+      return data.keys().hasAll(['username', 'unit']) &&
+             data.keys().size() <= 6 &&
+             data.username is string && data.username.size() >= 3 && data.username.size() <= 32 &&
+             data.unit is string && data.unit.size() <= 64 &&
+             (!('avatarUrl' in data) || (data.avatarUrl == null || (data.avatarUrl is string && data.avatarUrl.size() <= 512)));
+    }
+
+    // --- Incident Validation ---
+    function isValidIncident(data) {
+      return data.keys().hasAll(['type', 'severity', 'location', 'timestamp', 'status']) &&
+             data.type is string && data.type.size() <= 128 &&
+             data.severity in ['Critical', 'Elevated', 'Nominal'] &&
+             data.location is string && data.location.size() <= 256 &&
+             data.timestamp is timestamp &&
+             data.status in ['Active', 'Resolved', 'Pending'] &&
+             (!('operatorId' in data) || data.operatorId == request.auth.uid) &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 2000)) &&
+             (!('x' in data) || data.x is number) &&
+             (!('y' in data) || data.y is number);
+    }
+
+    // --- Violation Validation ---
+    function isValidViolation(data) {
+      return data.keys().hasAll(['plate', 'type', 'location', 'timestamp', 'status']) &&
+             data.plate is string && data.plate.size() <= 20 &&
+             data.type is string && data.type.size() <= 128 &&
+             data.location is string && data.location.size() <= 256 &&
+             data.timestamp is timestamp &&
+             data.status in ['pending', 'approved', 'rejected'] &&
+             (!('confidence' in data) || data.confidence is number) &&
+             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 512));
+    }
+
+    // --- Collections ---
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['username', 'avatarUrl', 'unit', 'updatedAt']) &&
+        incoming().updatedAt == request.time
+      );
+    }
+
+    match /incidents/{incidentId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(incidentId) && isValidIncident(incoming()) && 
+                    incoming().timestamp == request.time;
+      allow update: if isSignedIn() && isValidIncident(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'description', 'severity', 'operatorId'])
+      );
+      allow delete: if false;
+    }
+
+    match /violations/{violationId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(violationId) && isValidViolation(incoming()) && 
+                    incoming().timestamp == request.time;
+      allow update: if isSignedIn() && isValidViolation(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['status'])
+      );
+      allow delete: if false;
+    }
+  }
+}
