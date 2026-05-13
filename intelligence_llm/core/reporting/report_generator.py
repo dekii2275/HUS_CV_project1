@@ -1,18 +1,16 @@
-# reporting/report_generator.py
+# core/reporting/report_generator.py
 import os
 import json
 import asyncio
 from datetime import datetime, date
 import asyncpg
-from dotenv import load_dotenv
+from config.settings import settings
 from langchain_core.prompts import PromptTemplate
-from rag.sql_agent import get_llm
-
-load_dotenv()
+from llm.sql_agent import get_llm
 
 class ReportGenerator:
     def __init__(self):
-        self.db_url = os.getenv("POSTGRES_URL")
+        self.db_url = settings.POSTGRES_URL
         self.llm = get_llm()
         
         # Load template
@@ -21,30 +19,28 @@ class ReportGenerator:
             self.prompt_template = PromptTemplate.from_template(f.read())
 
     async def get_daily_summary(self, target_date: date):
-        """Truy vấn các chỉ số tổng hợp từ DB"""
+        """Truy vấn các chỉ số tổng hợp từ DB core"""
         conn = await asyncpg.connect(self.db_url)
         try:
-            # 1. Tổng số xe & Giờ cao điểm (peak hour)
-            # Giả định peak hour là giờ có sum(total) cao nhất
+            # 1. Tổng số xe & Giờ cao điểm (peak hour) - Tính từ bảng detections
             stats = await conn.fetchrow("""
                 SELECT 
-                    SUM(total) as total_vehicles,
-                    TO_CHAR(time, 'HH24:00') as hour
-                FROM vehicle_counts 
-                WHERE time::date = $1
+                    COUNT(DISTINCT track_id) as total_vehicles,
+                    TO_CHAR(time_bucket('1 hour', timestamp), 'HH24:00') as hour
+                FROM detections
+                WHERE timestamp::date = $1
                 GROUP BY hour 
-                ORDER BY SUM(total) DESC 
+                ORDER BY total_vehicles DESC 
                 LIMIT 1
             """, target_date)
             
-            # 2. Đếm sự kiện và vi phạm
-            incidents_count = await conn.fetchval("SELECT COUNT(*) FROM traffic_events WHERE time::date = $1", target_date)
-            violations_count = await conn.fetchval("SELECT COUNT(*) FROM violations WHERE time::date = $1", target_date)
+            # 2. Đếm sự kiện từ bảng events
+            incidents_count = await conn.fetchval("SELECT COUNT(*) FROM events WHERE timestamp::date = $1", target_date)
             
             # 3. Lấy danh sách mô tả sự kiện để LLM phân tích
             event_rows = await conn.fetch("""
-                SELECT description FROM traffic_events 
-                WHERE time::date = $1 AND severity IN ('medium', 'high')
+                SELECT description FROM events 
+                WHERE timestamp::date = $1
             """, target_date)
             events_detail = "\n".join([f"- {r['description']}" for r in event_rows]) or "Không có sự cố nghiêm trọng."
 
@@ -53,7 +49,7 @@ class ReportGenerator:
                 "total_vehicles": stats['total_vehicles'] if stats else 0,
                 "peak_hour": stats['hour'] if stats else "N/A",
                 "incidents_count": incidents_count,
-                "violations_count": violations_count,
+                "violations_count": 0, # Tạm thời chưa tách riêng violations từ events
                 "events_detail": events_detail
             }
         finally:
@@ -69,7 +65,7 @@ class ReportGenerator:
         chain = self.prompt_template | self.llm
         report_content = await chain.ainvoke(summary_data)
         
-        # Xử lý output (Ollama trả về BaseMessage, OpenAI cũng vậy)
+        # Xử lý output
         if hasattr(report_content, 'content'):
             report_text = report_content.content
         else:

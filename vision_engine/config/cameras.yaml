@@ -40,7 +40,7 @@ cameras:
       meters_per_pixel_y: 0.070
 
   youtube_demo:
-    name: "Ngã tư Lý Thường Kiệt"
+    name: "Camera Phương Trần"
     rtsp_url: "rtsp://admin:password@192.168.1.101:554/stream1"
     youtube_url: "https://www.youtube.com/live/G_G8A6JU_LI?si=FAQlxrya3JX5Kldy"
     frame_size: [1920, 1080]

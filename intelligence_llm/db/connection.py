@@ -1,11 +1,8 @@
 import os
 import asyncpg
-from dotenv import load_dotenv
+from config.settings import settings
 
-# Load biến môi trường từ file .env
-load_dotenv()
-
-POSTGRES_URL = os.getenv("POSTGRES_URL", "postgresql://itms_user:itms_pass@localhost:5432/itms_db")
+POSTGRES_URL = settings.POSTGRES_URL
 
 _pool: asyncpg.Pool | None = None
 

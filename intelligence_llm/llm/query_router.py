@@ -1,10 +1,9 @@
-# rag/query_router.py
-import os
+# llm/query_router.py
 from typing import Literal
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from rag.sql_agent import get_llm
-from rag.prompts import ROUTER_PROMPT
+from llm.sql_agent import get_llm
+from llm.prompts import ROUTER_PROMPT
 
 class QueryRouter:
     def __init__(self):
@@ -12,12 +11,13 @@ class QueryRouter:
         self.prompt = ChatPromptTemplate.from_template(ROUTER_PROMPT)
         self.router_chain = self.prompt | self.llm | StrOutputParser()
 
-    def route_query(self, question: str) -> Literal["sql", "vector", "hybrid"]:
+    async def route_query(self, question: str) -> Literal["sql", "vector", "hybrid"]:
         """Phân loại câu hỏi của người dùng"""
         print(f"🤖 Router đang phân tích câu hỏi: {question}")
         
-        # Gọi LLM để lấy phân loại
-        response = self.router_chain.invoke({"question": question}).lower().strip()
+        # Gọi LLM để lấy phân loại (Async)
+        response = await self.router_chain.ainvoke({"question": question})
+        response = response.lower().strip()
         
         # Clean kết quả để đảm bảo chỉ trả về 1 trong 3 loại
         if "hybrid" in response:

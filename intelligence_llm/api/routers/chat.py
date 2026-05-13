@@ -1,12 +1,12 @@
 import traceback
 from fastapi import APIRouter, HTTPException
-from app.schemas import ChatRequest, ChatResponse
-from rag.chain import TrafficRAGChain
-from rag.query_router import QueryRouter
+from api.schemas import ChatRequest, ChatResponse
+from llm.chain import TrafficRAGChain
+from llm.query_router import QueryRouter
 
 router = APIRouter(prefix="/chat", tags=["AI Chat"])
 
-# Khởi tạo Chain
+# Khởi tạo Chain (Nên dùng Dependency Injection hoặc Lifespan trong thực tế)
 rag_system = TrafficRAGChain()
 router_logic = QueryRouter()
 
@@ -14,10 +14,10 @@ router_logic = QueryRouter()
 async def chat_with_itms(request: ChatRequest):
     try:
         # 1. Xác định loại câu hỏi (SQL / Vector / Hybrid)
-        q_type = router_logic.route_query(request.question)
+        q_type = await router_logic.route_query(request.question)
         
-        # 2. Gọi RAG Chain xử lý lấy chuỗi text kết quả thô
-        raw_answer = rag_system.ask(request.question)
+        # 2. Gọi RAG Chain xử lý (Async)
+        raw_answer = await rag_system.ask(request.question)
         
         # 3. Trích xuất nguồn tài liệu nếu là tìm kiếm ngữ nghĩa
         sources = []
@@ -29,16 +29,14 @@ async def chat_with_itms(request: ChatRequest):
                 print(f"⚠️ Cảnh báo lỗi lấy nguồn Vector Store: {e}")
                 sources = ["ChromaDB Error"]
 
-        # 4. Trả về đúng cấu trúc Pydantic Contract
+        # 4. Trả về đúng cấu trúc Pydantic
         return ChatResponse(
-            answer=str(raw_answer), # Chắc chắn là kiểu chuỗi (str)
+            answer=str(raw_answer),
             sources=list(set(sources)),
             query_type=q_type,
             confidence=0.85 if q_type == "sql" else 0.75
         )
     except Exception as e:
-        # Ép Python in lỗi chi tiết ra CMD nếu logic chạy bên trong bị lỗi
         print("\n❌ 🛑 [API ROUTER ERROR] 🛑 ❌")
         traceback.print_exc()
-        print("-----------------------------------\n")
         raise HTTPException(status_code=500, detail=str(e))

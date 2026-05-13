@@ -1,21 +1,19 @@
-# app/main.py
+# api/main.py
 import uvicorn
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from dotenv import load_dotenv
 
-from app.routers import chat, reports
-from reporting.scheduler import start_scheduler
-from app.schemas import HealthResponse
-
-load_dotenv()
+from config.settings import settings
+from api.routers import chat, reports
+from core.reporting.scheduler import start_scheduler
+from api.schemas import HealthResponse
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # --- STARTUP ---
-    print("🚀 ITMS Intelligence Module is starting...")
+    print(f"🚀 ITMS Intelligence Module is starting on port {settings.API_PORT}...")
     # Khởi chạy Scheduler tự động báo cáo
     scheduler = start_scheduler()
     
@@ -41,8 +39,8 @@ app.add_middleware(
 )
 
 # Include các routers
-app.include_router(chat.router)
-app.include_router(reports.router)
+app.include_router(chat.router, prefix="/api/v1")
+app.include_router(reports.router, prefix="/api/v1")
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
@@ -51,9 +49,8 @@ async def health_check():
         status="ok",
         db="connected",
         chromadb="connected",
-        llm=f"{os.getenv('LLM_PROVIDER')}:{os.getenv('OLLAMA_MODEL') or os.getenv('OPENAI_MODEL')}"
+        llm=f"{settings.LLM_PROVIDER}"
     )
 
 if __name__ == "__main__":
-    port = int(os.getenv("API_PORT", 8002))
-    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)
+    uvicorn.run("api.main:app", host=settings.API_HOST, port=settings.API_PORT, reload=True)

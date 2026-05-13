@@ -22,8 +22,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy toàn bộ mã nguồn vào container
 COPY . .
 
-# Mở port 8002 cho FastAPI
-EXPOSE 8002
+# Mở port cho FastAPI
+EXPOSE 18001
 
 # Lệnh khởi chạy server
-CMD ["python", "app/main.py"]
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "18001"]

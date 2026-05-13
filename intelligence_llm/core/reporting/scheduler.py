@@ -1,7 +1,8 @@
-# reporting/scheduler.py
+# core/reporting/scheduler.py
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime, timedelta
-from reporting.report_generator import ReportGenerator
+from core.reporting.report_generator import ReportGenerator
+from config.settings import settings
 import logging
 
 # Cấu hình logging để theo dõi scheduler
@@ -12,7 +13,7 @@ async def daily_report_job():
     """Job chạy định kỳ"""
     try:
         generator = ReportGenerator()
-        # Chạy báo cáo cho chính ngày hôm nay (lúc 23:55)
+        # Chạy báo cáo cho chính ngày hôm nay
         today = datetime.now().date()
         await generator.generate_and_save(today)
         logger.info(f"Successfully generated daily report for {today}")
@@ -22,10 +23,8 @@ async def daily_report_job():
 def start_scheduler():
     scheduler = AsyncIOScheduler()
     
-    # Lấy cấu hình từ .env
-    from os import getenv
-    hour = int(getenv("REPORT_SCHEDULE_HOUR", 23))
-    minute = int(getenv("REPORT_SCHEDULE_MINUTE", 55))
+    hour = settings.REPORT_SCHEDULE_HOUR
+    minute = settings.REPORT_SCHEDULE_MINUTE
     
     scheduler.add_job(
         daily_report_job, 

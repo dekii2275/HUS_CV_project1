@@ -3,8 +3,8 @@
 
 model:
   # Đường dẫn model weights (ưu tiên fine-tuned)
-  weights: "weights/best.pt"
-  fallback_weights: "weights/yolov8n.pt"
+  weights: "models/yolo11n.pt"
+  fallback_weights: "models/yolo11n.pt"
 
   # Inference
   confidence: 0.50          # Ngưỡng confidence để nhận detection

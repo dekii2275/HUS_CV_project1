@@ -56,20 +56,34 @@ class ByteTrackWrapper:
         self._init_tracker()
 
     def _init_tracker(self):
-        """Khởi tạo ByteTrack từ boxmot."""
-        try:
-            from boxmot.trackers.bytetrack.bytetrack import ByteTrack
-            self._tracker = ByteTrack(
-                track_thresh=self.track_thresh,
-                track_buffer=self.track_buffer,
-                match_thresh=self.match_thresh,
-                frame_rate=self.frame_rate,
-            )
-            print("[Tracker] ✓ ByteTrack được khởi tạo thành công")
-        except (ImportError, ModuleNotFoundError) as e:
-            # Fallback: dùng stub tracker
-            print(f"[TrackerWarning] ByteTrack không thể import ({e}). Dùng stub tracker.")
-            self._tracker = _StubTracker()
+        """Sử dụng Ultralytics built-in tracker (không cần boxmot)."""
+        print("[Tracker] ✓ Sử dụng Ultralytics ByteTrack")
+        self._tracker = "internal"
+
+    def update_from_results(self, results) -> List[TrackResult]:
+        """
+        Chuyển đổi kết quả từ model.track() sang định dạng TrackResult.
+        """
+        if not results or len(results) == 0 or results[0].boxes.id is None:
+            return []
+        
+        boxes = results[0].boxes
+        res = []
+        for i in range(len(boxes)):
+            box = boxes.xyxy[i].cpu().numpy()
+            tid = int(boxes.id[i].cpu().numpy())
+            conf = float(boxes.conf[i].cpu().numpy())
+            cls_id = int(boxes.cls[i].cpu().numpy())
+            cls_name = self._class_names[cls_id] if cls_id < len(self._class_names) else "unknown"
+            
+            res.append(TrackResult(
+                track_id=tid,
+                box=box.tolist(),
+                class_id=cls_id,
+                class_name=cls_name,
+                confidence=conf
+            ))
+        return res
 
     def update(self,
                detections: np.ndarray,

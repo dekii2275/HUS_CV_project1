@@ -1,52 +1,53 @@
-from datetime import datetime, date
-from typing import Optional, Dict, Any
-from pydantic import BaseModel, ConfigDict
+from datetime import datetime
+from typing import Optional, List, Dict, Any
+from pydantic import BaseModel, ConfigDict, Field
+from uuid import UUID
 
-class VehicleCount(BaseModel):
+class CameraModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
-    time: datetime
     camera_id: str
-    location: Optional[str] = None
-    motorbike: int = 0
-    car: int = 0
-    truck: int = 0
-    bus: int = 0
-    bicycle: int = 0
-    total: int = 0
-    avg_speed: Optional[float] = None
-    density: Optional[float] = None
+    location: Optional[Any] = None  # POINT
+    rtsp_url: Optional[str] = None
+    is_active: bool = True
+    camera_metadata: Dict[str, Any] = {}
+    created_at: datetime
 
-class TrafficEvent(BaseModel):
+class FrameModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
-    id: int
-    time: datetime
+    frame_uuid: UUID
+    frame_id: int
+    timestamp: datetime
     camera_id: str
+
+class DetectionModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    detection_id: int
+    frame_uuid: UUID
+    timestamp: datetime
+    track_id: Optional[int] = None
+    class_name: str = Field(alias="class")
+    confidence: float
+    bbox: List[int]
+    bottom_center: Optional[Any] = None
+
+class EventModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    event_id: int
+    frame_uuid: UUID
+    timestamp: datetime
     event_type: Optional[str] = None
-    severity: Optional[str] = None
+    track_id: Optional[int] = None
     description: Optional[str] = None
-    vehicle_id: Optional[str] = None
-    location: Optional[str] = None
-    resolved_at: Optional[datetime] = None
-
-class Violation(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    
-    id: int
-    time: datetime
-    camera_id: Optional[str] = None
-    violation_type: Optional[str] = None
-    vehicle_id: Optional[str] = None
-    speed: Optional[float] = None
-    image_path: Optional[str] = None
-    location: Optional[str] = None
 
 class DailyReport(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
     id: int
-    report_date: date
+    report_date: datetime
     content: Optional[str] = None
     summary: Optional[Dict[str, Any]] = None
     created_at: Optional[datetime] = None
