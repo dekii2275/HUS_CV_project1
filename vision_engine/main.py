@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Import các module của vision_engine
-from vision_engine.preprocessing.clahe import auto_enhance
+from vision_engine.preprocessing.clahe import AutoEnhancer
 from vision_engine.preprocessing.roi_transform import ROIMask, PerspectiveTransformer
 from vision_engine.tracking.tracker import ByteTrackWrapper
 from vision_engine.tracking.track_manager import TrackManager
@@ -65,16 +65,25 @@ def main():
     print(f"[AI] Đang tải model: {model_path} trên thiết bị: {m_cfg['model']['device']}")
     model = YOLO(model_path)
     
+    # Lấy danh sách class từ model hoặc config
+    class_names = model.names
+    if 'classes' in m_cfg['model'] and m_cfg['model']['classes']:
+        # Chuyển key sang int nếu từ yaml (đôi khi yaml load key là string)
+        config_classes = {int(k): v for k, v in m_cfg['model']['classes'].items()}
+        class_names.update(config_classes)
+
     tracker = ByteTrackWrapper(
         frame_rate=cam_cfg['fps'],
-        track_thresh=m_cfg['tracking']['track_thresh']
+        track_thresh=m_cfg['tracking']['track_thresh'],
+        class_names=class_names
     )
     track_manager = TrackManager(
         speed_limit_kmh=m_cfg['tracking']['speed_limit_kmh'],
         smoothing_factor=m_cfg['tracking']['speed_smoothing']
     )
 
-    # 3. Khởi tạo Preprocessing
+    # 3. Khởi tạo Preprocessing & Enhancer
+    enhancer = AutoEnhancer(check_interval=60)
     roi = ROIMask(cam_cfg['roi']['points'], cam_cfg['frame_size'])
     transformer = PerspectiveTransformer(
         src_points=cam_cfg['perspective']['src_points'],
@@ -113,12 +122,23 @@ def main():
             continue
 
         # Resize frame nếu kích thước không khớp cấu hình (để ROI mask đúng vị trí)
-        if (frame.shape[1], frame.shape[0]) != tuple(cam_cfg['frame_size']):
-            frame = cv2.resize(frame, tuple(cam_cfg['frame_size']))
+        # ⚡ Tối ưu: Nếu frame quá lớn (Full HD+), cân nhắc downscale xuống 1280 (720p) để tăng tốc
+        target_size = tuple(cam_cfg['frame_size'])
+        if frame.shape[1] > 1280:
+             # Nếu cấu hình vẫn là 1920, nhưng ta muốn nhanh hơn, ta có thể ghi đè ở đây
+             # Tuy nhiên để an toàn, ta chỉ resize theo config.
+             pass
+
+        if (frame.shape[1], frame.shape[0]) != target_size:
+            frame = cv2.resize(frame, target_size)
 
         # --- BƯỚC 1: Tiền xử lý ---
-        # Tăng cường chất lượng ảnh
-        processed_frame = auto_enhance(frame)
+        # Tăng cường chất lượng ảnh (Dùng class có cache để nhanh hơn)
+        if m_cfg['preprocessing'].get('auto_enhance', True):
+            processed_frame = enhancer.enhance(frame)
+        else:
+            processed_frame = frame
+            
         # Áp dụng ROI Mask
         masked_frame = roi.apply(processed_frame)
 
@@ -128,6 +148,7 @@ def main():
             source=masked_frame,
             conf=m_cfg['model']['confidence'],
             device=m_cfg['model']['device'],
+            half=m_cfg['model']['half_precision'],
             classes=m_cfg['model']['filter_classes'],
             persist=True,  # Quan trọng: giữ ID qua các frame
             tracker="bytetrack.yaml", # Sử dụng ByteTrack mặc định
@@ -137,12 +158,13 @@ def main():
         # Chuyển đổi kết quả sang định dạng chuẩn của Engine
         track_results = tracker.update_from_results(results)
         
-        # Tính vị trí BEV cho từng xe
+        # Tính vị trí BEV (mét) cho từng xe để tính vận tốc chính xác
         bev_positions = {}
         for tr in track_results:
             foot_point = get_bottom_center(tr.box)
-            bev_pos = transformer.warp_point(foot_point)
-            bev_positions[tr.track_id] = bev_pos
+            # ⚡ Dùng đơn vị mét thay vì pixel
+            bev_pos_m = transformer.warp_point_meters(foot_point)
+            bev_positions[tr.track_id] = bev_pos_m
             
         track_manager.update(track_results, bev_positions, fps=cam_cfg['fps'])
 

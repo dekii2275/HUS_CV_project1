@@ -136,17 +136,31 @@ class PerspectiveTransformer:
 
     def warp_point(self, point: Tuple[float, float]) -> Tuple[float, float]:
         """
-        Chiếu 1 điểm từ camera coordinates → BEV coordinates.
+        Chiếu 1 điểm từ camera coordinates → BEV coordinates (pixel).
 
         Args:
             point: (x, y) trong frame gốc.
 
         Returns:
-            (x_bev, y_bev) trong BEV frame.
+            (x_bev, y_bev) trong BEV frame (pixel).
         """
         pt = np.array([[[point[0], point[1]]]], dtype=np.float32)
         pt_bev = cv2.perspectiveTransform(pt, self.M)
         return (float(pt_bev[0][0][0]), float(pt_bev[0][0][1]))
+
+    def warp_point_meters(self, point: Tuple[float, float]) -> Tuple[float, float]:
+        """
+        Chiếu 1 điểm từ camera coordinates → BEV coordinates (mét).
+        Dùng để tính toán khoảng cách thực và vận tốc.
+
+        Args:
+            point: (x, y) trong frame gốc.
+
+        Returns:
+            (x_m, y_m) – tọa độ BEV tính bằng mét.
+        """
+        px, py = self.warp_point(point)
+        return (px * self.mpp_x, py * self.mpp_y)
 
     def warp_point_inverse(self, point: Tuple[float, float]) -> Tuple[float, float]:
         """

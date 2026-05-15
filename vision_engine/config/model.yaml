@@ -11,17 +11,20 @@ model:
   iou_threshold: 0.45       # NMS IoU threshold
   device: "cuda:0"          # "cpu" | "cuda:0" | "cuda:1" | "mps"
   image_size: 640           # Input size cho YOLO (px)
-  half_precision: false     # FP16 – bật nếu dùng GPU Nvidia
+  half_precision: true      # FP16 – bật nếu dùng GPU Nvidia
 
-  # Classes (phải khớp với thứ tự training)
+  # Classes COCO (yolo11n pretrained – COCO label map)
+  # Khi dùng fine-tuned best.pt thì classes sẽ là [0,1,2,3] = car/moto/bus/truck
   classes:
-    0: car
-    1: motorcycle
-    2: bus
-    3: truck
+    2: car
+    3: motorcycle
+    5: bus
+    7: truck
 
-  # Chỉ detect các class này (null = detect tất cả)
-  filter_classes: [0, 1, 2, 3]
+  # Chỉ detect các class này – COCO IDs cho vehicle
+  # ⚠️ CHÚ Ý: Nếu đổi sang custom model (best.pt), bạn PHẢI cập nhật lại IDs này.
+  # Ví dụ: custom model thường dùng [0, 1, 2, 3] cho [car, motorcycle, bus, truck].
+  filter_classes: [2, 3, 5, 7]
 
 tracking:
   # ByteTrack parameters

@@ -11,7 +11,7 @@ TODO: Cài đặt ByteTrack và kết nối thực sự.
 
 from __future__ import annotations
 import numpy as np
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 from dataclasses import dataclass, field
 
 
@@ -46,13 +46,14 @@ class ByteTrackWrapper:
                  track_thresh: float = 0.5,
                  track_buffer: int = 30,
                  match_thresh: float = 0.8,
-                 frame_rate: int = 25):
+                 frame_rate: int = 25,
+                 class_names: Optional[Dict[int, str]] = None):
         self.track_thresh = track_thresh
         self.track_buffer = track_buffer
         self.match_thresh = match_thresh
         self.frame_rate = frame_rate
         self._tracker = None
-        self._class_names: List[str] = ["car", "motorcycle", "bus", "truck"]
+        self._class_names = class_names or {}
         self._init_tracker()
 
     def _init_tracker(self):
@@ -74,7 +75,7 @@ class ByteTrackWrapper:
             tid = int(boxes.id[i].cpu().numpy())
             conf = float(boxes.conf[i].cpu().numpy())
             cls_id = int(boxes.cls[i].cpu().numpy())
-            cls_name = self._class_names[cls_id] if cls_id < len(self._class_names) else "unknown"
+            cls_name = self._class_names.get(cls_id, f"unknown_{cls_id}")
             
             res.append(TrackResult(
                 track_id=tid,
@@ -115,8 +116,7 @@ class ByteTrackWrapper:
                 continue
             x1, y1, x2, y2, tid, conf, cls_id = row[:7]
             cls_id = int(cls_id)
-            cls_name = (self._class_names[cls_id]
-                        if cls_id < len(self._class_names) else "unknown")
+            cls_name = self._class_names.get(cls_id, f"unknown_{cls_id}")
             results.append(TrackResult(
                 track_id=int(tid),
                 box=[float(x1), float(y1), float(x2), float(y2)],

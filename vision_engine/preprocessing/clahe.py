@@ -13,14 +13,16 @@ import numpy as np
 # ─────────────────────────────────────────────
 
 def is_dark_frame(frame: np.ndarray, threshold: float = 50.0) -> bool:
-    """True nếu frame tối hơn ngưỡng (ban đêm / thiếu sáng)."""
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    """True nếu frame tối hơn ngưỡng (ban đêm / thiếu sáng). Downscale để tăng tốc."""
+    small = cv2.resize(frame, (160, 90))
+    gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
     return gray.mean() < threshold
 
 
 def is_hazy_frame(frame: np.ndarray, threshold: float = 0.6) -> bool:
-    """True nếu phát hiện sương mù (dark channel variance thấp)."""
-    dark = _dark_channel(frame, patch_size=15)
+    """True nếu phát hiện sương mù. Downscale để tăng tốc."""
+    small = cv2.resize(frame, (320, 180))
+    dark = _dark_channel(small, patch_size=15)
     mean_dc = dark.mean()
     if mean_dc < 1e-6:
         return False
@@ -133,17 +135,43 @@ def enhance_frame(frame: np.ndarray,
 
 
 # ─────────────────────────────────────────────
-# Pipeline tự động – dùng mặc định
+# Pipeline tự động có state – Dùng để tăng tốc
 # ─────────────────────────────────────────────
+
+class AutoEnhancer:
+    """
+    Tự động quản lý việc tăng cường chất lượng ảnh với cơ chế cache
+    để tránh tính toán thống kê quá nhiều lần.
+    """
+    def __init__(self, check_interval: int = 60):
+        self.check_interval = check_interval
+        self.frame_count = 0
+        self.is_dark = False
+        self.is_hazy = False
+
+    def enhance(self, frame: np.ndarray) -> np.ndarray:
+        # Chỉ kiểm tra điều kiện sau mỗi N frame
+        if self.frame_count % self.check_interval == 0:
+            self.is_dark = is_dark_frame(frame)
+            self.is_hazy = is_hazy_frame(frame)
+        
+        self.frame_count += 1
+
+        if self.is_dark:
+            return enhance_frame(frame, gamma=1.8, use_clahe=True, clahe_clip=3.0,
+                                 use_denoising=False, use_dehazing=False)
+        elif self.is_hazy:
+            return enhance_frame(frame, use_dehazing=False, use_clahe=True, clahe_clip=2.0,
+                                 use_denoising=False)
+        else:
+            return enhance_frame(frame, use_clahe=True, clahe_clip=1.5,
+                                 use_denoising=False, use_dehazing=False)
+
 
 def auto_enhance(frame: np.ndarray) -> np.ndarray:
     """
-    Tự động phát hiện điều kiện và chọn thông số:
-      - Ban đêm  → gamma=1.8, CLAHE clip=3.0
-      - Sương mù → CLAHE clip=2.0 (dehazing DISABLED)
-      - Bình thường → CLAHE clip=1.5 nhẹ
-    
-    ⚡ DISABLED: dehazing & denoising (rất chậm)
+    Backward compatibility wrapper. 
+    NOTE: Nên dùng class AutoEnhancer để có hiệu năng tốt nhất.
     """
     if is_dark_frame(frame):
         return enhance_frame(frame, gamma=1.8, use_clahe=True, clahe_clip=3.0,
