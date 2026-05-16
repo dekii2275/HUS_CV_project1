@@ -1,0 +1,59 @@
+# config/model.yaml
+# Cấu hình model YOLO và tracking parameters.
+
+model:
+  # Đường dẫn model weights (ưu tiên fine-tuned)
+  weights: "models/yolo11n.pt"
+  fallback_weights: "models/yolo11n.pt"
+
+  # Inference
+  confidence: 0.50          # Ngưỡng confidence để nhận detection
+  iou_threshold: 0.45       # NMS IoU threshold
+  device: "cuda:0"          # "cpu" | "cuda:0" | "cuda:1" | "mps"
+  image_size: 640           # Input size cho YOLO (px)
+  half_precision: true      # FP16 – bật nếu dùng GPU Nvidia
+
+  # Classes COCO (yolo11n pretrained – COCO label map)
+  # Khi dùng fine-tuned best.pt thì classes sẽ là [0,1,2,3] = car/moto/bus/truck
+  classes:
+    2: car
+    3: motorcycle
+    5: bus
+    7: truck
+
+  # Chỉ detect các class này – COCO IDs cho vehicle
+  # ⚠️ CHÚ Ý: Nếu đổi sang custom model (best.pt), bạn PHẢI cập nhật lại IDs này.
+  # Ví dụ: custom model thường dùng [0, 1, 2, 3] cho [car, motorcycle, bus, truck].
+  filter_classes: [2, 3, 5, 7]
+
+tracking:
+  # ByteTrack parameters
+  track_thresh: 0.50        # Confidence để tạo track mới
+  track_buffer: 30          # Số frame giữ lost track
+  match_thresh: 0.80        # IoU để match detection → track
+  frame_rate: 25            # FPS (phải khớp với camera)
+
+  # TrackManager
+  max_lost_frames: 30       # Xóa track sau N frame mất tích
+  speed_limit_kmh: 50.0     # Ngưỡng cảnh báo vượt tốc
+  speed_smoothing: 0.30     # EMA alpha (0.1=mượt, 0.9=nhạy)
+
+preprocessing:
+  auto_enhance: true        # Tự động tăng cường ảnh
+  # Các giá trị dưới chỉ dùng khi auto_enhance: false
+  gamma: 1.0
+  use_clahe: true
+  clahe_clip: 2.0
+  use_denoising: false      # ⚡ DISABLED để tăng tốc (denoise rất chậm)
+  denoise_d: 9
+  use_dehazing: false       # ⚡ DISABLED để tăng tốc (dehazing rất chậm)
+
+output:
+  show_display: true        # Hiển thị cửa sổ cv2
+  save_video: false         # Lưu video output
+  output_path: "outputs/"
+  draw_roi: false           # Vẽ ROI overlay khi debug
+  draw_bev: false           # Hiển thị BEV frame riêng
+  show_fps: true
+  show_count: true
+  speed_warning: true       # Highlight xe vượt tốc

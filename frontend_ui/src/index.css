@@ -1,0 +1,78 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap');
+
+@theme {
+  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Artistic Flair Brutalist Palette - Semantic Variables */
+  --color-background-muted: var(--bg-muted);
+  --color-surface: var(--bg-surface);
+  --color-brand-primary: #FF3E00;
+  --color-brand-secondary: #FF3E00;
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-border-subtle: var(--border-subtle);
+  
+  --color-status-success: #22C55E;
+  --color-status-warning: #F59E0B;
+  --color-status-error: #FF3E00;
+}
+
+@layer base {
+  :root {
+    --bg-muted: #0A0A0A;
+    --bg-surface: #111111;
+    --text-primary: #F0F0F0;
+    --text-muted: #71717A;
+    --border-subtle: #27272A;
+    
+    background-color: var(--bg-muted);
+    color: var(--text-primary);
+  }
+
+  html.light {
+    --bg-muted: #F8FAFC;
+    --bg-surface: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-muted: #64748B;
+    --border-subtle: #E2E8F0;
+  }
+
+  body {
+    @apply bg-background-muted text-text-primary antialiased font-sans transition-colors duration-300;
+  }
+}
+
+/* Brutalist Typography Helpers */
+@layer utilities {
+  .tracking-brutalist {
+    tracking-letter-spacing: 0.3em;
+  }
+}
+
+/* Custom scrollbar for data-dense panels */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272A;
+  border-radius: 0px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF3E00;
+}
+
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
